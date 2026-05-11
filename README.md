@@ -1,3 +1,9 @@
+> [!WARNING]
+> 11.05.2026
+> 
+> This fork is tested only on Linux hosts and does not include any Windows-based testing.
+> Changes from this fork may not work correctly and may break otherwise working J2534 DLL functionality on Windows.
+
 # j2534
 
 j2534 is a library written specifically for the [Tactrix Openport 2.0](https://www.tactrix.com/index.php?option=com_virtuemart&page=shop.product_details&flypage=flypage.tpl&product_id=17&Itemid=53&redirected=1&Itemid=53 "Tactrix Openport 2.0") cable.
