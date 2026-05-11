@@ -950,6 +950,12 @@ int32_t PassThruReadMsgs(const unsigned long ChannelID, PASSTHRU_MSG *pMsg,
 						int8_t *msg_type = "";
 						unsigned long dataSize = 0;
 
+            /* Original code doesn't handle extended-ID type flag as openport
+             * seems to flag them, mask it out from type but use rx or tx flag
+             * to pass higher up. */
+            const uint8_t is_ext = (packet_type & 0x02);
+            packet_type &= ~0x02;
+
 						// Message Type check
 						// TxDone Msg 0x10
 						if (packet_type == TX_DONE)
@@ -1037,6 +1043,9 @@ int32_t PassThruReadMsgs(const unsigned long ChannelID, PASSTHRU_MSG *pMsg,
 							if (packet_type == TX_LB_MSG)
 								msgBuf->RxStatus = 1;	// TX Loopback msg status
 
+              if (is_ext)
+                msgBuf->RxStatus |= 0x00000100UL; // Extended ID flag
+
 							if (channel_id == CAN || channel_id == ISO15765)	// CAN message
 							{
 								msgBuf->Timestamp = parse_ts(data + pos);
@@ -1053,7 +1062,7 @@ int32_t PassThruReadMsgs(const unsigned long ChannelID, PASSTHRU_MSG *pMsg,
 								msgBuf->ExtraDataIndex = dataSize;
 							}
 							msgBuf->ProtocolID = con->protocol_id;
-							msgBuf->TxFlags = 0;
+							msgBuf->TxFlags = is_ext ? 0x00000100UL : 0UL;
 							bytes_processed = bytes_processed + data[len] + 4;
 							pos = bytes_processed + 5;
 							len = bytes_processed + 3;
@@ -1797,6 +1806,12 @@ int32_t PassThruIoctl(const unsigned long ChannelID, const unsigned long ioctlID
 
 		r = LIBUSB_SUCCESS;
 	}
+  if (ioctlID == J2534_CLEAR_MSG_FILTERS)
+  {
+    if (write_log)
+      writelog("[CLEAR_MSG_FILTERS]: NOT SUPPORTED\n");
+    r = LIBUSB_SUCCESS;
+  }
 
 	EXIT_IOCTL:
 	if (write_log)
